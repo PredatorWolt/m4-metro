@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M4 Metro | Private Pub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --m4-blue: #0054a6;
+            --beer-gold: #ffb400;
+            --dark-surface: #121212;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #050505 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 600px; width: 100%; }
+
+        /* Grup İsmi ve Header */
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--m4-blue);
+            margin-bottom: 30px;
+        }
+
+        .m4-badge {
+            background: var(--m4-blue);
+            color: white;
+            font-family: 'Bebas Neue';
+            font-size: 2.5rem;
+            padding: 5px 25px;
+            display: inline-block;
+            border-radius: 5px;
+            letter-spacing: 3px;
+            box-shadow: 0 0 15px rgba(0, 84, 166, 0.5);
+        }
+
+        h1 {
+            font-family: 'Bebas Neue';
+            font-size: 3.5rem;
+            margin: 10px 0 0 0;
+            color: white;
+        }
+
+        /* Bira Sayacı Alanı */
+        .counter-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .count-text {
+            font-size: 6rem;
+            font-weight: 800;
+            color: var(--beer-gold);
+            text-shadow: 0 0 20px rgba(255, 180, 0, 0.4);
+            display: block;
+            margin: 10px 0;
+        }
+
+        .btn-cheers {
+            background: linear-gradient(135deg, var(--beer-gold), #e67e22);
+            color: black;
+            border: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            text-transform: uppercase;
+        }
+
+        .btn-cheers:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 180, 0, 0.3);
+        }
+
+        /* Forum / Mesajlar */
+        .forum-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid var(--m4-blue);
+        }
+
+        .forum-title {
+            font-family: 'Bebas Neue';
+            font-size: 1.8rem;
+            color: var(--m4-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .btn-send {
+            background: var(--m4-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #msg-list {
+            margin-top: 25px;
+            max-height: 350px;
+            overflow-y: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .msg-card {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .msg-header {
+            font-weight: 700;
+            color: var(--beer-gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .msg-content { margin-top: 5px; font-weight: 300; opacity: 0.9; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--m4-blue); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="m4-badge">M4 METRO</div>
+            <h1>OFFICIAL PUB</h1>
+        </header>
+
+        <section class="counter-box">
+            <p style="margin:0; opacity:0.6; letter-spacing: 2px;">GRUP TOPLAM BİRA SAYISI</p>
+            <span class="count-text" id="beerDisplay">0</span>
+            <button class="btn-cheers" onclick="addBeer()">ŞEREFE! 🍻</button>
+        </section>
+
+        <section class="forum-box">
+            <div class="forum-title">M4 HATTI / DUVAR YAZILARI</div>
+            <input type="text" id="userName" placeholder="Rumuzun">
+            <textarea id="userText" rows="2" placeholder="Gruba bir şeyler söyle..."></textarea>
+            <button class="btn-send" onclick="sendMsg()">MESAJI AS</button>
+
+            <div id="msg-list">
+                </div>
+        </section>
+    </div>
+
+    <script>
+        // Senin Firebase URL'in
+        const firebaseConfig = {
+            databaseURL: "https://m4-metro-biramatik-default-rtdb.europe-west1.firebasedatabase.app/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Sayaç Dinle ve Artır
+        const beerRef = db.ref('m4_beer_counter');
+        beerRef.on('value', (snap) => {
+            document.getElementById('beerDisplay').innerText = snap.val() || 0;
+        });
+
+        function addBeer() {
+            beerRef.transaction((count) => (count || 0) + 1);
+        }
+
+        // Forum Dinle ve Yaz
+        const msgRef = db.ref('m4_forum_posts');
+        function sendMsg() {
+            const name = document.getElementById('userName').value;
+            const text = document.getElementById('userText').value;
+            if(name && text) {
+                msgRef.push({ name, text });
+                document.getElementById('userText').value = '';
+            }
+        }
+
+        msgRef.on('value', (snap) => {
+            const data = snap.val();
+            const list = document.getElementById('msg-list');
+            list.innerHTML = '';
+            for(let key in data) {
+                list.innerHTML = `
+                    <div class="msg-card">
+                        <div class="msg-header">${data[key].name}</div>
+                        <div class="msg-content">${data[key].text}</div>
+                    </div>
+                ` + list.innerHTML;
+            }
+        });
+    </script>
+
+</body>
+</html>
