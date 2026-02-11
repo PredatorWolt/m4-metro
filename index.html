@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M4 Metro Pub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --m4-blue: #0054a6; --beer-gold: #ffb400; --bg: #050505; }
+        body { font-family: 'Poppins', sans-serif; background: #050505; color: white; text-align: center; padding: 20px; }
+        .m4-logo { background: var(--m4-blue); font-family: 'Bebas Neue'; font-size: 3rem; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 20px; }
+        .card { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid #333; max-width: 400px; margin: 0 auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #111; color: white; }
+        button { width: 100%; padding: 15px; border-radius: 50px; border: none; background: var(--beer-gold); font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none; }
+        #msg-list { margin-top: 20px; text-align: left; font-size: 0.8rem; }
+        .msg { border-left: 3px solid var(--m4-blue); padding-left: 10px; margin-bottom: 10px; background: #111; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="m4-logo">M4 METRO PUB</div>
+    <p style="color:var(--beer-gold); font-weight:bold;">SİSTEM AKTİF ✅</p>
+
+    <div id="auth-ui" class="card">
+        <h3>İSTASYON GİRİŞİ</h3>
+        <input type="text" id="nick" placeholder="Rumuz">
+        <input type="password" id="pass" placeholder="Şifre">
+        <button onclick="handleAuth()">GİRİŞ / KAYIT</button>
+    </div>
+
+    <div id="main-ui" class="card hidden">
+        <h2 id="welcome"></h2>
+        <div style="font-size: 4rem; color: var(--beer-gold); font-weight: bold;" id="total">0</div>
+        <button onclick="doCheers()" style="background: white; color: black;">ŞEREFE! 🍻</button>
+        <hr style="margin: 20px 0; opacity: 0.2;">
+        <textarea id="msgIn" style="width:100%; background:#111; color:white; border-radius:10px; padding:10px;" placeholder="Mesaj yaz..."></textarea>
+        <button onclick="send()" style="background: var(--m4-blue); color: white; padding: 10px;">GÖNDER</button>
+        <div id="msg-list"></div>
+    </div>
+
+    <script>
+        // FIREBASE BAĞLANTISI
+        const config = { databaseURL: "https://m4-metro-biramatik-default-rtdb.europe-west1.firebasedatabase.app/" };
+        firebase.initializeApp(config);
+        const db = firebase.database();
+
+        let user = localStorage.getItem('m4_user');
+        if(user) showMain();
+
+        function handleAuth() {
+            const n = document.getElementById('nick').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            if(!n || !p) return alert("Boş bırakma!");
+
+            db.ref('users/' + n).once('value', s => {
+                const d = s.val();
+                if(!d) { db.ref('users/' + n).set({ p: p }).then(() => login(n)); }
+                else if(d.p === p) { login(n); }
+                else { alert("Şifre yanlış!"); }
+            });
+        }
+
+        function login(n) {
+            localStorage.setItem('m4_user', n);
+            user = n;
+            showMain();
+        }
+
+        function showMain() {
+            document.getElementById('auth-ui').classList.add('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('welcome').innerText = "Vatman: " + user;
+        }
+
+        function doCheers() {
+            db.ref('total').transaction(x => (x || 0) + 1);
+            db.ref('leader/' + user).transaction(x => (x || 0) + 1);
+        }
+
+        db.ref('total').on('value', s => document.getElementById('total').innerText = s.val() || 0);
+
+        function send() {
+            const t = document.getElementById('msgIn').value;
+            if(!t) return;
+            db.ref('posts').push({ u: user, t: t });
+            document.getElementById('msgIn').value = '';
+        }
+
+        db.ref('posts').limitToLast(10).on('value', s => {
+            const list = document.getElementById('msg-list');
+            list.innerHTML = '';
+            const data = s.val();
+            for(let id in data) {
+                list.innerHTML = `<div class="msg"><b>@${data[id].u}:</b> ${data[id].t}</div>` + list.innerHTML;
+            }
+        });
+    </script>
+</body>
+</html>
