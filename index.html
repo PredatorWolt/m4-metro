@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4 Metro Pub</title>
+    <title>M4 Metro Pub | Ultimate v2</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -43,7 +43,7 @@
             <option value="#ff00ff">M4 Pembe</option>
             <option value="#00ff00">Ray Yeşili</option>
         </select>
-        <button onclick="handleAuth()">MEGANA GİRİJ YAB</button>
+        <button onclick="handleAuth()">SİSTEME GİR</button>
     </div>
 
     <div id="main-ui" class="hidden" style="width: 100%; max-width: 480px;">
@@ -96,6 +96,16 @@
         let userColor = localStorage.getItem('m4_color') || '#ffb400';
         if(user) showMain();
 
+        // 6 KADEMELİ BADGE SİSTEMİ
+        function getBadge(score) {
+            if (score >= 200) return "🍻 ALKOLİK";
+            if (score >= 100) return "🍺";
+            if (score >= 60) return "🍔";
+            if (score >= 30) return "🍟";
+            if (score >= 10) return "🍌";
+            return "🍆";
+        }
+
         function handleAuth() {
             const n = document.getElementById('nick').value.trim();
             const p = document.getElementById('pass').value.trim();
@@ -124,7 +134,12 @@
         function showMain() {
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('welcome-text').innerText = "Vatman: " + user;
+            
+            // Kullanıcının rütbesini başlangıçta çekelim
+            db.ref('leader/' + user).on('value', s => {
+                const score = s.val() || 0;
+                document.getElementById('welcome-text').innerText = getBadge(score) + " Vatman: " + user;
+            });
         }
 
         function doCheers() {
@@ -159,10 +174,17 @@
         }
 
         db.ref('total').on('value', s => document.getElementById('total').innerText = s.val() || 0);
+
         db.ref('leader').on('value', s => {
-            const sorted = Object.entries(s.val() || {}).sort((a,b) => b[1]-a[1]).slice(0,5);
-            document.getElementById('leader-list').innerHTML = sorted.map(([n, v], i) => `<div style="display:flex; justify-content:space-between; padding:5px; font-size:0.9rem;"><span>#${i+1} ${n}</span><b>${v}</b></div>`).join('');
+            const data = s.val() || {};
+            const sorted = Object.entries(data).sort((a,b) => b[1]-a[1]).slice(0,5);
+            document.getElementById('leader-list').innerHTML = sorted.map(([n, v], i) => `
+                <div style="display:flex; justify-content:space-between; padding:5px; font-size:0.9rem;">
+                    <span>#${i+1} ${getBadge(v)} ${n}</span>
+                    <b>${v}</b>
+                </div>`).join('');
         });
+
         db.ref('posts').limitToLast(12).on('value', s => {
             const list = document.getElementById('msg-list'); list.innerHTML = '';
             const data = s.val() || {};
