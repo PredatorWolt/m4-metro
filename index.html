@@ -3,69 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4 Metro Pub | Official</title>
+    <title>M4 Metro Pub | Poyraz Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <style>
         :root { --m4-blue: #0054a6; --beer-gold: #ffb400; --bg-dark: #020205; }
         * { box-sizing: border-box; }
-        
         body { 
             font-family: 'Poppins', sans-serif; background-color: var(--bg-dark);
             background-image: linear-gradient(to bottom, rgba(0, 84, 166, 0.2) 0%, rgba(5, 5, 5, 0.9) 100%), url('https://www.transparenttextures.com/patterns/dark-matter.png');
             color: white; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px;
         }
-
-        .m4-logo { 
-            background: var(--m4-blue); font-family: 'Bebas Neue'; font-size: 3.2rem; 
-            padding: 5px 35px; border-radius: 5px; display: inline-block; 
-            box-shadow: 0 0 25px rgba(0, 84, 166, 0.4); border: 2px solid white; 
-            letter-spacing: 3px; margin-bottom: 25px;
-        }
-
-        .card { 
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); 
-            padding: 25px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.1); 
-            max-width: 480px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            text-align: center; margin-bottom: 20px; 
-        }
-
-        h3 { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--m4-blue); margin: 0 0 15px 0; }
+        .m4-logo { background: var(--m4-blue); font-family: 'Bebas Neue'; font-size: 3.2rem; padding: 5px 35px; border-radius: 5px; display: inline-block; box-shadow: 0 0 25px rgba(0, 84, 166, 0.4); border: 2px solid white; letter-spacing: 3px; margin-bottom: 25px; }
+        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); padding: 25px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.1); max-width: 480px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; position: relative; }
         
-        input, textarea { 
-            width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; 
-            border: 1px solid #333; background: rgba(0,0,0,0.4); color: white; outline: none; 
-        }
+        /* Bira Barı */
+        .progress-container { width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; height: 12px; margin: 15px 0; overflow: hidden; border: 1px solid #333; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--beer-gold), #fff); width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--beer-gold); }
 
-        button { 
-            width: 100%; padding: 16px; border-radius: 50px; border: none; 
-            background: linear-gradient(135deg, var(--beer-gold), #e67e22); 
-            font-weight: 900; cursor: pointer; text-transform: uppercase; color: black; transition: 0.2s;
-        }
-        button:active { transform: scale(0.96); }
-
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.4); color: white; outline: none; font-family: inherit; }
+        button { width: 100%; padding: 16px; border-radius: 50px; border: none; background: linear-gradient(135deg, var(--beer-gold), #e67e22); font-weight: 900; cursor: pointer; text-transform: uppercase; color: black; transition: 0.2s; }
         .hidden { display: none !important; }
-        .total-box { font-size: 5.5rem; font-weight: 800; color: var(--beer-gold); text-shadow: 0 0 25px rgba(255, 180, 0, 0.4); margin: 10px 0; }
-
-        /* Leaderboard */
+        .total-box { font-size: 5.5rem; font-weight: 800; color: var(--beer-gold); text-shadow: 0 0 25px rgba(255, 180, 0, 0.4); margin: 5px 0; line-height: 1; }
+        
+        .online-dot { height: 8px; width: 8px; background-color: #00ff00; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 8px #00ff00; }
         .leader-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .rank { color: var(--beer-gold); font-weight: bold; }
-
-        /* Mesajlar */
-        #msg-list { margin-top: 20px; text-align: left; max-height: 200px; overflow-y: auto; }
-        .msg { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--m4-blue); }
-        .msg b { color: var(--beer-gold); font-size: 0.75rem; display: block; }
-
+        .msg { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--m4-blue); text-align: left; }
         .logout-link { color: #ff4d4d; cursor: pointer; font-size: 0.75rem; text-decoration: underline; margin-top: 15px; display: inline-block; }
+
+        /* POYRAZ İMZASI */
+        footer { margin-top: auto; padding: 20px; font-size: 0.7rem; opacity: 0.5; letter-spacing: 1px; text-align: center; font-style: italic; }
     </style>
 </head>
 <body>
 
+    <audio id="sndCheers" src="https://assets.mixkit.co/active_storage/sfx/2205/2205-preview.mp3"></audio>
+    <audio id="sndMetro" src="https://assets.mixkit.co/active_storage/sfx/1074/1074-preview.mp3"></audio>
+
     <div class="m4-logo">M4 METRO</div>
 
     <div id="auth-ui" class="card">
-        <h3>İSTASYON GİRİŞİ</h3>
+        <h3 style="font-family:'Bebas Neue'; color:var(--m4-blue);">İSTASYON GİRİŞİ</h3>
         <input type="text" id="nick" placeholder="Rumuz">
         <input type="password" id="pass" placeholder="Şifre">
         <button onclick="handleAuth()">SİSTEME GİR</button>
@@ -73,27 +52,30 @@
 
     <div id="main-ui" class="hidden" style="width: 100%; max-width: 480px;">
         <div class="card">
+            <div style="font-size:0.7rem; margin-bottom:10px;"><span class="online-dot"></span> <span id="active-users">Vatmanlar İstasyonda</span></div>
             <span id="welcome-text" style="opacity: 0.8; font-weight: bold;"></span>
             <div class="total-box" id="total">0</div>
+            <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
             <button onclick="doCheers()">ŞEREFE! 🍻</button>
-            <span class="logout-link" onclick="logout()">[İstasyondan Ayrıl / Çıkış]</span>
+            <span class="logout-link" onclick="logout()">[Çıkış Yap]</span>
         </div>
 
         <div class="card">
-            <h3>🏆 VATMAN SIRALAMASI</h3>
-            <div id="leader-list">Yükleniyor...</div>
+            <h3 style="font-family:'Bebas Neue'; color:var(--m4-blue);">🏆 VATMAN SIRALAMASI</h3>
+            <div id="leader-list"></div>
         </div>
 
         <div class="card">
-            <h3>📢 İSTASYON DUVARI</h3>
-            <textarea id="msgIn" rows="2" placeholder="Mesajını buraya as..."></textarea>
-            <button onclick="send()" style="background: var(--m4-blue); color: white; margin-top: 5px; padding: 10px;">MESAJI GÖNDER</button>
+            <h3 style="font-family:'Bebas Neue'; color:var(--m4-blue);">📢 İSTASYON DUVARI</h3>
+            <textarea id="msgIn" rows="2" placeholder="Mesajını as..."></textarea>
+            <button onclick="send()" style="background: var(--m4-blue); color: white; margin-top: 5px; padding: 10px;">GÖNDER</button>
             <div id="msg-list"></div>
         </div>
     </div>
 
+    <footer>poyraz tarafından alkol ile oluşturuldu</footer>
+
     <script>
-        // FIREBASE BAĞLANTISI
         const config = { databaseURL: "https://m4-metro-biramatik-default-rtdb.europe-west1.firebasedatabase.app/" };
         firebase.initializeApp(config);
         const db = firebase.database();
@@ -104,55 +86,59 @@
         function handleAuth() {
             const n = document.getElementById('nick').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(!n || !p) return alert("Bilgileri eksiksiz gir!");
-
+            if(!n || !p) return alert("Bilgileri doldur!");
             db.ref('users/' + n).once('value', s => {
                 const d = s.val();
-                if(!d) { db.ref('users/' + n).set({ p: p }).then(() => login(n)); }
-                else if(d.p === p) { login(n); }
-                else { alert("Bu rumuz alınmış veya şifre yanlış!"); }
+                if(!d) db.ref('users/' + n).set({ p: p }).then(() => login(n));
+                else if(d.p === p) login(n);
+                else alert("Şifre yanlış!");
             });
         }
 
-        function login(n) {
-            localStorage.setItem('m4_user', n);
-            user = n;
-            showMain();
-        }
-
-        function logout() {
-            localStorage.removeItem('m4_user');
-            location.reload();
-        }
-
+        function login(n) { localStorage.setItem('m4_user', n); user = n; showMain(); }
+        function logout() { localStorage.removeItem('m4_user'); location.reload(); }
         function showMain() {
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('welcome-text').innerText = "Vatman: " + user;
+            updateRankDisplay();
+        }
+
+        function updateRankDisplay(score = 0) {
+            let badge = "👣";
+            if(score >= 50) badge = "👨‍✈️ Baş Vatman";
+            else if(score >= 30) badge = "👮 Güvenlik";
+            else if(score >= 10) badge = "🎫 Yolcu";
+            document.getElementById('welcome-text').innerText = `${badge}: ${user}`;
         }
 
         function doCheers() {
+            document.getElementById('sndCheers').play();
+            if(Math.random() < 0.1) document.getElementById('sndMetro').play();
             db.ref('total').transaction(x => (x || 0) + 1);
             db.ref('leader/' + user).transaction(x => (x || 0) + 1);
         }
 
-        // VERİ DİNLEME
-        db.ref('total').on('value', s => document.getElementById('total').innerText = s.val() || 0);
+        db.ref('total').on('value', s => {
+            const val = s.val() || 0;
+            document.getElementById('total').innerText = val;
+            document.getElementById('pBar').style.width = (val % 100) + "%";
+        });
 
         db.ref('leader').on('value', s => {
             const data = s.val() || {};
+            if(data[user]) updateRankDisplay(data[user]);
             const sorted = Object.entries(data).sort((a,b) => b[1]-a[1]).slice(0,5);
-            document.getElementById('leader-list').innerHTML = sorted.map(([name, val], i) => `
-                <div class="leader-item">
-                    <span><span class="rank">#${i+1}</span> ${name} ${val >= 50 ? '👨‍✈️' : (val >= 20 ? '🎫' : '👣')}</span>
-                    <span style="font-weight:bold;">${val} Bira</span>
-                </div>`).join('');
+            document.getElementById('leader-list').innerHTML = sorted.map(([name, val], i) => {
+                let r = val >= 50 ? '👨‍✈️' : (val >= 30 ? '👮' : (val >= 10 ? '🎫' : '👣'));
+                return `<div class="leader-item"><span>#${i+1} ${name} ${r}</span><b>${val} Sefer</b></div>`;
+            }).join('');
         });
 
         function send() {
             const t = document.getElementById('msgIn').value;
             if(!t) return;
-            db.ref('posts').push({ u: user, t: t });
+            const time = new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+            db.ref('posts').push({ u: user, t: t, time: time });
             document.getElementById('msgIn').value = '';
         }
 
@@ -161,8 +147,14 @@
             list.innerHTML = '';
             const data = s.val() || {};
             Object.keys(data).reverse().forEach(id => {
-                list.innerHTML += `<div class="msg"><b>@${data[id].u}</b>${data[id].t}</div>`;
+                list.innerHTML += `<div class="msg"><small style="color:var(--beer-gold)">@${data[id].u} • ${data[id].time}</small><br>${data[id].t}</div>`;
             });
+        });
+
+        db.ref('online/' + user).set(true);
+        db.ref('online/' + user).onDisconnect().remove();
+        db.ref('online').on('value', s => {
+            document.getElementById('active-users').innerText = s.numChildren() + " Vatman İstasyonda";
         });
     </script>
 </body>
